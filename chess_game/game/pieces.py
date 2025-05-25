@@ -82,21 +82,21 @@ class Bishop(Piece):
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
 
         for dr, dc in directions:
-            r, c = self.pos
-            while 0 <= r + dr < 8 and 0 <= c + dc < 8:
-                r += dr
-                c += dc
-                square = board[r][c]
+            new_row, new_col = row + dr, col + dc
+
+            while 0 <= new_row < 8 and 0 <= new_col < 8:
+                square = board[new_row][new_col]
 
                 if square is None:
-                    moves.append((r, c))
-                
+                    moves.append((new_row, new_col))
                 elif square.team != self.team:
-                    moves.append((r, c))
+                    moves.append((new_row, new_col))
+                    break
+                else:  # square.team == self.team
                     break
 
-                elif square.team == self.team:
-                    break
+                new_row += dr
+                new_col += dc
 
         return moves
 
@@ -106,7 +106,28 @@ class Rook(Piece):
         super().__init__(team, self.type, row, col)
     
     def valid_moves(self, board):
-        pass
+        moves = []
+        row, col = self.pos
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # Down, Up, Right, Left
+
+        for dr, dc in directions:
+            new_row, new_col = row + dr, col + dc
+
+            while 0 <= new_row < 8 and 0 <= new_col < 8:
+                square = board[new_row][new_col]
+
+                if square is None:
+                    moves.append((new_row, new_col))
+                elif square.team != self.team:
+                    moves.append((new_row, new_col))
+                    break
+                else:  # square.team == self.team
+                    break
+
+                new_row += dr
+                new_col += dc
+
+        return moves
 
 class Queen(Piece):
     def __init__(self, team, row, col):
@@ -114,7 +135,31 @@ class Queen(Piece):
         super().__init__(team, self.type, row, col)
     
     def valid_moves(self, board):
-        pass
+        moves = []
+        row, col = self.pos
+        directions = [
+            (1, 0), (-1, 0), (0, 1), (0, -1),  # Up, down, right, left
+            (-1, -1), (-1, 1), (1, -1), (1, 1)  # Diagonals
+        ]
+
+        for dr, dc in directions:
+            new_row, new_col = row + dr, col + dc
+
+            while 0 <= new_row < 8 and 0 <= new_col < 8:
+                square = board[new_row][new_col]
+
+                if square is None:
+                    moves.append((new_row, new_col))
+                elif square.team != self.team:
+                    moves.append((new_row, new_col))
+                    break
+                else:  # square.team == self.team
+                    break
+
+                new_row += dr
+                new_col += dc
+        
+        return moves
 
 class King(Piece):
     def __init__(self, team, row, col):
