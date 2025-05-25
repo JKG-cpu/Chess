@@ -165,6 +165,30 @@ class King(Piece):
     def __init__(self, team, row, col):
         self.type = 'King'
         super().__init__(team, self.type, row, col)
+
+        self.in_check = False
     
     def valid_moves(self, board):
-        pass
+        moves = []
+        row, col = self.pos
+        directions = [
+            (-1, -1), (-1, 0), (-1, 1),  # Upper layer
+            (0, -1), (0, 1),             # Middle Layer
+            (1, -1), (1, 0), (1, 1)      # Lower Layer
+        ]
+
+        for dr, dc in directions:
+            new_row, new_col = dr + row, dc + col
+            square = board[new_row][new_col]
+
+            if square is None:
+                moves.append((new_row, new_col))
+            
+            elif square.team != self.team:
+                moves.append((new_row, new_col))
+            
+            else:
+                pass
+
+        return moves
+

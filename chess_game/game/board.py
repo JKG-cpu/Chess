@@ -15,7 +15,7 @@ class Board:
                 'Rook':    [(7, 0), (7, 7)],
                 'Knight':  [(7, 1), (7, 6)],
                 'Bishop':  [(7, 2), (7, 5)],
-                'Queen':   [(3, 3)],
+                'Queen':   [(7, 3)],
                 'King':    [(7, 4)],
             },
             'Black': {
@@ -55,7 +55,7 @@ class Board:
                     valid_moves = self.get_valid_moves(from_r, from_c)
 
                     while True and valid_moves:
-                        user_inp = input("Enter a place to go: ").strip().lower()
+                        user_inp = input("Enter a place to go or type exit: ").strip().lower()
                         if len(user_inp) == 2 and user_inp[0] in 'abcdefgh' and user_inp[1] in '12345678':
                             to_r = 8 - int(user_inp[1])
                             to_c = 'abcdefgh'.index(user_inp[0])
@@ -64,12 +64,15 @@ class Board:
                             if pos in valid_moves:
                                 self.move_piece(from_r, from_c, to_r, to_c)
                                 return
-                            
+
                             else:
                                 print('Not a valid place to move.')
                             
                             time.sleep(0.2)
                             
+                        elif user_inp == 'exit':
+                            return
+
                         else:
                             print("Not a valid move.")
 
