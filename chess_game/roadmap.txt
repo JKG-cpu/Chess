@@ -1,0 +1,63 @@
+# Chess Game Development Roadmap
+
+## Phase 1: Planning & Setup
+- Define project goals & scope (console app, GUI, networked, AI, etc.)
+- Choose programming language and libraries (e.g., Python + Rich for console)
+- Set up development environment & version control (Git)
+
+## Phase 2: Basic Board & Piece Representation
+- Create a Board class (8x8 grid data structure)
+- Define base Piece class (team, position, symbol)
+- Create subclasses for each piece type (Pawn, Knight, Bishop, Rook, Queen, King)
+- Implement piece initialization with starting positions
+
+## Phase 3: Display & User Interface
+- Implement board display with coordinates
+- Add piece rendering with symbols and colors (use libraries like Rich)
+- Add input handling for selecting and moving pieces
+
+## Phase 4: Movement Logic
+- Implement valid_moves() methods for each piece type
+  - Pawn moves and captures (incl. en passant later)
+  - Knight’s L-shape moves
+  - Bishop diagonal moves
+  - Rook straight moves
+  - Queen combined moves
+  - King one-step moves (castling later)
+- Validate moves based on current board state
+- Highlight valid moves to user
+
+## Phase 5: Game Mechanics
+- Implement move execution & board state update
+- Enforce turn order (white moves first, then black, alternating)
+- Add checks for check and checkmate
+- Add special moves:
+  - Castling
+  - Pawn promotion
+  - En passant capture
+
+## Phase 6: Additional Features
+- Undo/redo moves
+- Save/load game state
+- Basic AI opponent or multiplayer support
+- Timers / move clocks
+- Improved UI/UX with animations or sound (if GUI)
+
+## Phase 7: Testing & Debugging
+- Write tests for piece movement rules
+- Test edge cases (check, checkmate, stalemate)
+- Fix bugs and polish gameplay
+
+## Phase 8: Deployment & Documentation
+- Package and distribute the game
+- Write user manual or help guide
+- Optionally open source the project or share online
+
+---
+
+### Tips:
+- Build incrementally; test each phase thoroughly
+- Keep code modular and readable
+- Use version control commits per milestone
+- Prioritize core gameplay before extras
+

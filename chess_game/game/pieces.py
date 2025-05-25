@@ -14,7 +14,7 @@ class Piece:
 
         self.team = team
         self.piece = type
-        self.piece_symbol = self.piece_symbols[type]
+        self.piece_symbol = f'{self.piece_symbols[type]}'
 
         self.pos = (row, col)
 
@@ -25,8 +25,6 @@ class Pawn(Piece):
     def __init__(self, team, row, col):
         self.type = 'Pawn'
         super().__init__(team, self.type, row, col)
-    
-        self.direction = -1 if self.team == 'White' else 1
 
     def valid_moves(self, board):
         moves = []
@@ -79,7 +77,28 @@ class Bishop(Piece):
         super().__init__(team, self.type, row, col)
     
     def valid_moves(self, board):
-        pass
+        moves = []
+        row, col = self.pos
+        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+
+        for dr, dc in directions:
+            r, c = self.pos
+            while 0 <= r + dr < 8 and 0 <= c + dc < 8:
+                r += dr
+                c += dc
+                square = board[r][c]
+
+                if square is None:
+                    moves.append((r, c))
+                
+                elif square.team != self.team:
+                    moves.append((r, c))
+                    break
+
+                elif square.team == self.team:
+                    break
+
+        return moves
 
 class Rook(Piece):
     def __init__(self, team, row, col):

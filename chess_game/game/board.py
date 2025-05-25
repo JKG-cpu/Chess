@@ -1,4 +1,6 @@
 import os, time
+from rich.console import Console
+console = Console()
 
 from pieces import Pawn, Knight, Bishop, Rook, Queen, King
 
@@ -31,6 +33,8 @@ class Board:
         self.active_pieces = []
         self.generate_board()
 
+        self.team = 'White'
+
         self.running = True
 
     def handle_move_piece(self):
@@ -43,26 +47,34 @@ class Board:
             if len(user_input) == 2 and user_input[0] in 'abcdefgh' and user_input[1] in '12345678':
                 from_r = 8 - int(user_input[1])
                 from_c = 'abcdefgh'.index(user_input[0])
-                valid_moves = self.get_valid_moves(from_r, from_c)
+                selection = self.board[from_r][from_c]
+                if selection.team != self.team:
+                    print("That is not your piece.")
+                    input("Press enter to continue.")
+                else:
+                    valid_moves = self.get_valid_moves(from_r, from_c)
 
-                while True:
-                    user_inp = input("Enter a place to go: ").strip().lower()
-                    if len(user_inp) == 2 and user_inp[0] in 'abcdefgh' and user_inp[1] in '12345678':
-                        to_r = 8 - int(user_inp[1])
-                        to_c = 'abcdefgh'.index(user_inp[0])
-                        pos = (to_r, to_c)
+                    while True and valid_moves:
+                        user_inp = input("Enter a place to go: ").strip().lower()
+                        if len(user_inp) == 2 and user_inp[0] in 'abcdefgh' and user_inp[1] in '12345678':
+                            to_r = 8 - int(user_inp[1])
+                            to_c = 'abcdefgh'.index(user_inp[0])
+                            pos = (to_r, to_c)
 
-                        if pos in valid_moves:
-                            self.move_piece(from_r, from_c, to_r, to_c)
-                            return
-                        
+                            if pos in valid_moves:
+                                self.move_piece(from_r, from_c, to_r, to_c)
+                                return
+                            
+                            else:
+                                print('Not a valid place to move.')
+                            
+                            time.sleep(0.2)
+                            
                         else:
-                            print('Not a valid place to move.')
-                        
-                        time.sleep(0.2)
-                        
-                    else:
-                        print("Not a valid move.")
+                            print("Not a valid move.")
+
+                    if not valid_moves:
+                        input("No Valid moves for that piece, press enter to continue.")
 
             else:
                 print("Not an option.")
@@ -111,41 +123,46 @@ class Board:
         size = 8
         horizontal_line = '  +' + ('---+' * size)
 
-        print('    ' + '   '.join(columns))  # Top column labels
+        console.print('    ' + '   '.join(columns))  # Top column labels
 
         for row in range(size):
-            print(horizontal_line)
+            console.print(horizontal_line)
             row_cells = []
             for col in range(size):
                 piece = self.board[row][col]
                 pos = (row, col)
 
                 if pos == selected_pos:
-                    # Highlight selected piece
-                    cell = f"[{piece.piece_symbol}]" if piece else '[ ]'
-                elif highlighted_moves and pos in highlighted_moves:
-                    # Highlight valid move position
-                    cell = ' # '
-                else:
-                    # Normal square
-                    if piece is None:
-                        cell = '   ' if (row + col) % 2 == 0 else ' . '
+                    if piece:
+                        color = "white" if piece.team == "White" else "bright_red"
+                        cell = f"[bold {color}][{piece.piece_symbol}][/]"
                     else:
-                        cell = f' {piece.piece_symbol} '
+                        cell = "   "
+                elif highlighted_moves and pos in highlighted_moves:
+                    cell = "[bold bright_white] # [/]"
+                else:
+                    if piece is None:
+                        if (row + col) % 2 == 0:
+                            cell = "   "
+                        else:
+                            cell = "[dim] . [/]"
+                    else:
+                        color = "white" if piece.team == "White" else "bright_red"
+                        cell = f"[bold {color}] {piece.piece_symbol} [/]"
                 row_cells.append(cell)
 
-            print(f"{size - row} |" + "|".join(row_cells) + f"| {size - row}")
+            console.print(f"{size - row} |" + "|".join(row_cells) + f"| {size - row}")
 
-        print(horizontal_line)
-        print('    ' + '   '.join(columns))  # Bottom column labels
+        console.print(horizontal_line)
+        console.print('    ' + '   '.join(columns))  # Bottom column labels
 
     def handle_highlight_moves(self):
         while True:
             cc()
             self.display_board()
-            user_input = input("Select a position, or type quit: ").strip().lower()
+            user_input = input("Select a position, or type exit: ").strip().lower()
 
-            if len(user_input) == 2 and user_input[0] in 'abdefgh' and user_input[1] in '12345678':
+            if len(user_input) == 2 and user_input[0] in 'abcdefgh' and user_input[1] in '12345678':
                 cc()
                 col = 'abcdefgh'.index(user_input[0])
                 row = 8 - int(user_input[1])
@@ -153,7 +170,7 @@ class Board:
                 self.display_board(selected_pos=(row, col), highlighted_moves=moves)
                 input('Press enter to continue.')
 
-            elif user_input == 'quit':
+            elif user_input == 'exit':
                 break
 
             else:
