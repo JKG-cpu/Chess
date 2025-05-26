@@ -62,7 +62,7 @@ class Board:
             "Black": 1 if self.team == "White" else -1
         }
         self.generate_board()
-
+        
         self.moves = Moves(self.team)
         self.running = True
         self.playing = True
@@ -199,8 +199,23 @@ class Board:
         console.print('    ' + '   '.join(columns))  # Bottom column labels
 
     def check_pieces(self, piece_name, pos):
-        pieces = ['Pawn', 'Bishop', "Knight", 'Rook', 'Queen', 'King']
-        
+        pieces_able_to_move = []
+        for team, piece in self.active_pieces:
+            if team != self.team:
+                continue
+
+            if piece.piece != piece_name:
+                continue
+
+            valid_moves = piece.valid_moves(self.board)
+
+            if pos in valid_moves:
+                pieces_able_to_move.append(piece.pos)
+
+        if len(pieces_able_to_move) == 1:
+            r, c = pieces_able_to_move[0]
+            t_r, t_c = pos
+            self.move_piece(r, c, t_r, t_c)
 
     def play(self):
         while self.playing:
