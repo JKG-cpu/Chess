@@ -1,8 +1,9 @@
-import os, time
+import os, time, random
 from rich.console import Console
 console = Console()
 
-from pieces import Pawn, Knight, Bishop, Rook, Queen, King
+from pieces import *
+from move import Moves
 
 def cc():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -10,33 +11,95 @@ def cc():
 class Board:
     def __init__(self):
         self.starting_positions = {
-            'White': {
-                'Pawn':    [(6, i) for i in range(8)],
-                'Rook':    [(7, 0), (7, 7)],
-                'Knight':  [(7, 1), (7, 6)],
-                'Bishop':  [(7, 2), (7, 5)],
-                'Queen':   [(7, 3)],
-                'King':    [(7, 4)],
+            "White-team":{
+                'White': {
+                    'Pawn':    [(6, i) for i in range(8)],
+                    'Rook':    [(7, 0), (7, 7)],
+                    'Knight':  [(7, 1), (7, 6)],
+                    'Bishop':  [(7, 2), (7, 5)],
+                    'Queen':   [(7, 3)],
+                    'King':    [(7, 4)],
+                },
+                'Black': {
+                    'Pawn':    [(1, i) for i in range(8)],
+                    'Rook':    [(0, 0), (0, 7)],
+                    'Knight':  [(0, 1), (0, 6)],
+                    'Bishop':  [(0, 2), (0, 5)],
+                    'Queen':   [(0, 3)],
+                    'King':    [(0, 4)],
+                }
             },
-            'Black': {
-                'Pawn':    [(1, i) for i in range(8)],
-                'Rook':    [(0, 0), (0, 7)],
-                'Knight':  [(0, 1), (0, 6)],
-                'Bishop':  [(0, 2), (0, 5)],
-                'Queen':   [(0, 3)],
-                'King':    [(0, 4)],
+            'Black-team': {
+                'Black': {
+                    'Pawn':    [(6, i) for i in range(8)],
+                    'Rook':    [(7, 0), (7, 7)],
+                    'Knight':  [(7, 1), (7, 6)],
+                    'Bishop':  [(7, 2), (7, 5)],
+                    'Queen':   [(7, 3)],
+                    'King':    [(7, 4)],
+                },
+                'White': {
+                    'Pawn':    [(1, i) for i in range(8)],
+                    'Rook':    [(0, 0), (0, 7)],
+                    'Knight':  [(0, 1), (0, 6)],
+                    'Bishop':  [(0, 2), (0, 5)],
+                    'Queen':   [(0, 3)],
+                    'King':    [(0, 4)],
+                }
             }
         }
 
         self.board = [[None for _ in range(8)] for _ in range(8)]
         self.empty = None
         self.active_pieces = []
+
+        teams = ['White', 'Black']
+        choice = random.choice(teams)
+        self.team_setup = f'{choice}-team'
+        self.team = f'{choice}'
+        self.forward_direction = {
+            "White": -1 if self.team == "White" else 1,
+            "Black": 1 if self.team == "White" else -1
+        }
         self.generate_board()
 
-        self.team = 'White'
-
+        self.moves = Moves(self.team)
         self.running = True
+        self.playing = True
 
+    # -------------------------------------------------- Generate Board / Pieces ---------------------------------------------
+    def generate_board(self):
+        cteam = self.starting_positions[self.team_setup]
+        for team in cteam:
+            for piece in cteam[team]:
+                for row, col in cteam[team][piece]:
+                    self.create_peice(piece, team, row, col)
+
+    def create_peice(self, type, team, row, col):
+        types = {
+            'Pawn': Pawn,
+            'Knight': Knight,
+            'Bishop': Bishop,
+            'Rook': Rook,
+            'Queen': Queen,
+            'King': King
+        }
+
+        if type not in types:
+            raise TypeError(f"Type {type} is not a valid piece.")
+
+        direction = self.forward_direction[team]
+
+        # Only pass direction if it's a Pawn
+        if type == 'Pawn':
+            piece = types[type](team, row, col, direction)
+        else:
+            piece = types[type](team, row, col)
+
+        self.active_pieces.append((team, piece))
+        self.board[row][col] = piece
+
+    # -------------------------------------------------- Play Chess Part -----------------------------------------------------
     def handle_move_piece(self):
         run = True
         while run:
@@ -97,30 +160,6 @@ class Board:
             return []  # No piece at that position
         return piece.valid_moves(self.board)
 
-    def create_peice(self, type, team, row, col):
-        # Knight, Bishop, Rook, Queen, King
-        types = {
-            'Pawn': Pawn,
-            'Knight': Knight,
-            'Bishop': Bishop,
-            'Rook': Rook,
-            'Queen': Queen,
-            'King': King
-        }
-
-        if type not in types:
-            raise TypeError(f"Type {type} is not a valid piece.")
-    
-        piece = types[type](team, row, col)
-        self.active_pieces.append((team, piece))
-        self.board[row][col] = piece
-
-    def generate_board(self):
-        for team in self.starting_positions:
-            for piece in self.starting_positions[team]:
-                for row, col in self.starting_positions[team][piece]:
-                    self.create_peice(piece, team, row, col)
-
     def display_board(self, selected_pos=None, highlighted_moves=None):
         columns = 'abcdefgh'
         size = 8
@@ -159,6 +198,24 @@ class Board:
         console.print(horizontal_line)
         console.print('    ' + '   '.join(columns))  # Bottom column labels
 
+    def check_pieces(self, piece_name, pos):
+        pieces = ['Pawn', 'Bishop', "Knight", 'Rook', 'Queen', 'King']
+        
+
+    def play(self):
+        while self.playing:
+            cc()
+            self.display_board()
+            piece_to_check = self.moves.parse_input()
+
+            if piece_to_check == True:
+                self.playing = False
+                continue
+
+            piece, pos = piece_to_check
+            self.check_pieces(piece, pos)
+
+    # -------------------------------------------------- Chess Tutorial Part --------------------------------------------------
     def handle_highlight_moves(self):
         while True:
             cc()
@@ -179,24 +236,35 @@ class Board:
             else:
                 print("Not a valid position.")
                 input("Press enter to continue.")
+    
+    def tutorial(self):
+        # ADD CHESS TUTORIAL HERE
+        pass
 
+    # -------------------------------------------------- Main Part to load chess ----------------------------------------------
     def main(self):
+        options = ['Play', 'Tutorial', 'Quit']
+
         while self.running:
             cc()
-            self.display_board()
-            user_input = input("Would you like to move a piece (m), or see valid moves for a piece (vm), or quit: ").strip().lower()
-            
-            if user_input == 'vm':
-                self.handle_highlight_moves()
+            for i, opt in enumerate(options, 1):
+                if i == len(options):
+                    print(opt)
+                else:
+                    print(opt, end=' | ')
 
-            elif user_input == 'm':
-                self.handle_move_piece()
+            user_input = input("Select an option: ").strip().title()
 
-            elif user_input == 'quit':
-                self.running = False
+            if user_input in options:
+                if user_input == 'Play':
+                    self.play()
+
+                elif user_input == 'Quit':
+                    self.running = False
 
             else:
-                print("Not a valid position.")
+                print("Not an option.")
+                input("Press enter to continue.")
 
 if __name__ == "__main__":
     board = Board()

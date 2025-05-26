@@ -1,5 +1,5 @@
 class Piece:
-    def __init__(self, team, type, row, col):
+    def __init__(self, team, type, row, col, direction=None):
         self.piece_symbols = {
             "Pawn": "P",
             "Rook": "R",
@@ -14,39 +14,44 @@ class Piece:
 
         self.team = team
         self.piece = type
-        self.piece_symbol = f'{self.piece_symbols[type]}'
-
+        self.piece_symbol = self.piece_symbols[type]
         self.pos = (row, col)
+        self.direction = direction  # +1 or -1 based on board orientation
 
     def __str__(self):
         return f"{self.team} {self.piece} ({self.piece_symbol}). Pos: {self.pos}"
-    
+
 class Pawn(Piece):
-    def __init__(self, team, row, col):
-        self.type = 'Pawn'
-        super().__init__(team, self.type, row, col)
+    def __init__(self, team, row, col, direction):
+        super().__init__(team, "Pawn", row, col, direction)
 
     def valid_moves(self, board):
         moves = []
         row, col = self.pos
-        direction = -1 if self.team == 'White' else 1
+        direction = self.direction
 
         next_row = row + direction
 
-        # Check if next square forward is inside the board and empty
-        if 0 <= next_row < 8 and not board[next_row][col]:
+        # Move forward 1 if empty
+        if 0 <= next_row < 8 and board[next_row][col] is None:
             moves.append((next_row, col))
 
-            # Check if pawn is on starting row and can move 2 squares forward
-            starting_row = 6 if self.team == 'White' else 1
-            two_steps_row = row + 2 * direction
-            if row == starting_row and not board[two_steps_row][col]:
-                moves.append((two_steps_row, col))
+            # Move forward 2 from starting row
+            starting_row = 6 if direction == -1 else 1
+            two_step = row + 2 * direction
+            if row == starting_row and board[two_step][col] is None:
+                moves.append((two_step, col))
 
-        # (Later: add diagonal captures, en passant, promotion, etc.)
+        for dc in [-1, 1]:
+            diag_row = row + direction
+            diag_col = col + dc
+            if 0 <= diag_row < 8 and 0 <= diag_col < 8:
+                target = board[diag_row][diag_col]
+                if target and target.team != self.team:
+                    moves.append((diag_row, diag_col))
 
         return moves
-    
+ 
 class Knight(Piece):
     def __init__(self, team, row, col):
         super().__init__(team, 'Knight', row, col)
@@ -191,4 +196,3 @@ class King(Piece):
                 pass
 
         return moves
-
