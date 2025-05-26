@@ -1,4 +1,3 @@
-user_input = input("Type pos: ")
+user_input = input("Type pos: ").strip()
 
-col = 'abcdefgh'.index(user_input[0])
-print(col)
+print(user_input)

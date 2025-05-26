@@ -1,7 +1,7 @@
 import time
 import os
 
-from pieces import *
+from .pieces import *
 
 def cc():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -64,7 +64,3 @@ class Moves:
         elif self.turn == 'AI':
             self.turn = 'Player'  # Fixed assignment
             return False
-
-if __name__ == '__main__':
-    moves = Moves('White')
-    print(moves.parse_input())

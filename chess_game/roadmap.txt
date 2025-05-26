@@ -1,3 +1,26 @@
+File structure:
+chess_game
+  AI
+    __init__.py
+    evalution.py
+    minimax.py
+  game
+    __init__.py
+    board.py
+    move.py
+    pieces.py
+  multiplayer
+    __init__.py
+    client.py
+    server.py
+  UI
+    __init__.py
+    text_ui.py
+  utils
+    __init__.py
+    fen.py
+    helpers.py
+
 # Chess Game Development Roadmap
 
 ## Phase 1: Planning & Setup

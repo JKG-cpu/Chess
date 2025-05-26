@@ -2,8 +2,8 @@ import os, time, random
 from rich.console import Console
 console = Console()
 
-from pieces import *
-from move import Moves
+from .pieces import *
+from .move import Moves
 
 def cc():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -160,7 +160,7 @@ class Board:
             return []  # No piece at that position
         return piece.valid_moves(self.board)
 
-    def display_board(self, selected_pos=None, highlighted_moves=None):
+    def display_board(self):
         columns = 'abcdefgh'
         size = 8
         horizontal_line = '  +' + ('---+' * size)
@@ -173,24 +173,14 @@ class Board:
             for col in range(size):
                 piece = self.board[row][col]
                 pos = (row, col)
-
-                if pos == selected_pos:
-                    if piece:
-                        color = "white" if piece.team == "White" else "bright_red"
-                        cell = f"[bold {color}][{piece.piece_symbol}][/]"
-                    else:
+                if piece is None:
+                    if (row + col) % 2 == 0:
                         cell = "   "
-                elif highlighted_moves and pos in highlighted_moves:
-                    cell = "[bold bright_white] # [/]"
-                else:
-                    if piece is None:
-                        if (row + col) % 2 == 0:
-                            cell = "   "
-                        else:
-                            cell = "[dim] . [/]"
                     else:
-                        color = "white" if piece.team == "White" else "bright_red"
-                        cell = f"[bold {color}] {piece.piece_symbol} [/]"
+                        cell = "[dim] . [/]"
+                else:
+                    color = "white" if piece.team == "White" else "bright_red"
+                    cell = f"[bold {color}] {piece.piece_symbol} [/]"
                 row_cells.append(cell)
 
             console.print(f"{size - row} |" + "|".join(row_cells) + f"| {size - row}")
@@ -234,7 +224,7 @@ class Board:
     def handle_highlight_moves(self):
         while True:
             cc()
-            self.display_board()
+            self.display_practice_board()
             user_input = input("Select a position, or type exit: ").strip().lower()
 
             if len(user_input) == 2 and user_input[0] in 'abcdefgh' and user_input[1] in '12345678':
@@ -242,7 +232,7 @@ class Board:
                 col = 'abcdefgh'.index(user_input[0])
                 row = 8 - int(user_input[1])
                 moves = self.get_valid_moves(row, col)
-                self.display_board(selected_pos=(row, col), highlighted_moves=moves)
+                self.display_practice_board(selected_pos=(row, col), highlighted_moves=moves)
                 input('Press enter to continue.')
 
             elif user_input == 'exit':
@@ -252,9 +242,72 @@ class Board:
                 print("Not a valid position.")
                 input("Press enter to continue.")
     
+    def display_practice_board(self, selected_pos = None, highlighted_moves = None):
+        columns = 'abcdefgh'
+        size = 8
+        horizontal_line = '  +' + ('---+' * size)
+
+        console.print('    ' + '   '.join(columns))  # Top column labels
+
+        for row in range(size):
+            console.print(horizontal_line)
+            row_cells = []
+            for col in range(size):
+                piece = self.board[row][col]
+                pos = (row, col)
+
+                if pos == selected_pos:
+                    if piece:
+                        color = "white" if piece.team == "White" else "bright_red"
+                        cell = f"[bold {color}][{piece.piece_symbol}][/]"
+                    else:
+                        cell = "   "
+                elif highlighted_moves and pos in highlighted_moves:
+                    cell = "[bold bright_white] # [/]"
+                else:
+                    if piece is None:
+                        if (row + col) % 2 == 0:
+                            cell = "   "
+                        else:
+                            cell = "[dim] . [/]"
+                    else:
+                        color = "white" if piece.team == "White" else "bright_red"
+                        cell = f"[bold {color}] {piece.piece_symbol} [/]"
+                row_cells.append(cell)
+
+            console.print(f"{size - row} |" + "|".join(row_cells) + f"| {size - row}")
+
+        console.print(horizontal_line)
+        console.print('    ' + '   '.join(columns))
+
+    def help_on_movement(self):
+        pieces = ['Pawn', 'Bishop', 'Knight', 'Rook', 'Queen', 'King']
+
     def tutorial(self):
-        # ADD CHESS TUTORIAL HERE
-        pass
+        run = True
+        options = ["See a piece's moves", 'How to move a Piece', "Exit"]
+        while run:
+            cc()
+            for i, opt in enumerate(options, 1):
+                if i == len(options):
+                    print(opt)
+                else:
+                    print(opt, end=' | ')
+
+            user_input = input("Select an option: ").strip().title()
+            
+            if user_input == 'Exit' or user_input == 'E' or user_input.startswith('Exit'):
+                run = False
+
+            elif user_input == "See A Piece's Moves" or user_input == 'See' or user_input.startswith("See"):
+                self.handle_highlight_moves()
+            
+            elif user_input == "How To Move A Piece" or user_input == 'How' or user_input.startswith("How"):
+                self.help_on_movement()
+            
+            else:
+                print("Not an option.")
+                input("Press enter to continue.")
 
     # -------------------------------------------------- Main Part to load chess ----------------------------------------------
     def main(self):
@@ -270,18 +323,18 @@ class Board:
 
             user_input = input("Select an option: ").strip().title()
 
-            if user_input in options:
-                if user_input == 'Play':
-                    self.play()
+            
+            if user_input == 'Play' or user_input.startswith("Pl"):
+                self.play()
 
-                elif user_input == 'Quit':
-                    self.running = False
+            elif user_input == 'Tutorial' or user_input.startswith("Tut"):
+                self.tutorial()
+
+            elif user_input == 'Quit' or user_input.startswith("Q"):
+                self.running = False
 
             else:
                 print("Not an option.")
                 input("Press enter to continue.")
-
-if __name__ == "__main__":
-    board = Board()
-    board.main()
-    cc()
+        
+        cc()
