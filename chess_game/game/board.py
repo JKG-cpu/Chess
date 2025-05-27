@@ -2,6 +2,7 @@ import os, time, random
 from rich.console import Console
 console = Console()
 
+from ai import Minimax
 from .pieces import *
 from .move import Moves
 
@@ -50,7 +51,7 @@ class Board:
             'Test-team': {
                 'White': {
                     'King':  [(7, 4)],
-                    'Queen': [(5, 4)],
+                    'Queen': [(6, 4)],
                     'Rook':  [(5, 7)],
                 },
                 'Black': {
@@ -68,6 +69,10 @@ class Board:
         self.team_setup = f'{choice}-team'
         self.team_setup = 'Test-team'
         self.team = f'{choice}'
+        if self.team == 'White':
+            self.op_team = 'Black'
+        else:
+            self.op_team = 'White'
         self.forward_direction = {
             "White": -1 if self.team == "White" else 1,
             "Black": 1 if self.team == "White" else -1
@@ -77,6 +82,9 @@ class Board:
         self.moves = Moves(self.team)
         self.running = True
         self.playing = True
+        self.turn = 'Player' if self.team == 'White' else "AI"
+
+        self.ai = Minimax(self.op_team, self.active_pieces, self.board)
 
     # -------------------------------------------------- Generate Board / Pieces ---------------------------------------------
     def generate_board(self):
@@ -241,17 +249,26 @@ class Board:
             self.check_checkmate(king_pos)
 
     def play(self):
+        self.playing = True
         while self.playing:
             cc()
             self.display_board()
-            piece_to_check = self.moves.parse_input()
+            if self.turn == 'Player':
+                piece_to_check = self.moves.parse_input()
+                if piece_to_check == True:
+                    self.playing = False
+                    continue
 
-            if piece_to_check == True:
-                self.playing = False
-                continue
+                piece, pos = piece_to_check
+                self.check_pieces(piece, pos)
 
-            piece, pos = piece_to_check
-            self.check_pieces(piece, pos)
+                self.turn = 'AI'
+            else:
+                f_pos, t_pos = self.ai.get_possible_moves()
+                f_r, f_c = f_pos
+                t_r, t_c = t_pos
+                self.move_piece(f_r, f_c, t_r, t_c)
+                self.turn = 'Player'
 
             self.check_if_king_checked()
 
