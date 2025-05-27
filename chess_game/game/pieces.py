@@ -184,15 +184,19 @@ class King(Piece):
 
         for dr, dc in directions:
             new_row, new_col = dr + row, dc + col
-            square = board[new_row][new_col]
+            
+            if 0 <= new_row < 8 and 0 <= new_col < 8:
+                square = board[new_row][new_col]
 
-            if square is None:
-                moves.append((new_row, new_col))
-            
-            elif square.team != self.team:
-                moves.append((new_row, new_col))
-            
+                if square is None:
+                    moves.append((new_row, new_col))
+                
+                elif square.team != self.team:
+                    moves.append((new_row, new_col))
+                
+                else:
+                    pass
             else:
-                pass
+                continue
 
         return moves

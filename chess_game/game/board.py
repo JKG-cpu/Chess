@@ -46,6 +46,16 @@ class Board:
                     'Queen':   [(0, 3)],
                     'King':    [(0, 4)],
                 }
+            },
+            'Test-team': {
+                'White': {
+                    'King':  [(7, 4)],
+                    'Queen': [(5, 4)],
+                    'Rook':  [(5, 7)],
+                },
+                'Black': {
+                    'King':  [(0, 4)],
+                }
             }
         }
 
@@ -56,6 +66,7 @@ class Board:
         teams = ['White', 'Black']
         choice = random.choice(teams)
         self.team_setup = f'{choice}-team'
+        self.team_setup = 'Test-team'
         self.team = f'{choice}'
         self.forward_direction = {
             "White": -1 if self.team == "White" else 1,
@@ -207,6 +218,28 @@ class Board:
             t_r, t_c = pos
             self.move_piece(r, c, t_r, t_c)
 
+    def check_checkmate(self, king_pos):
+        r, c = king_pos
+        king_valid_moves = self.get_valid_moves(r, c)
+        for team, piece in self.active_pieces:
+            pass
+
+    def check_if_king_checked(self):
+        pieces_checking = []
+        king_pos = [piece.pos for _, piece in self.active_pieces if piece.piece == 'King' and piece.team != self.team][0]
+        
+        for team, piece in self.active_pieces:
+            if team == self.team:
+                continue
+
+            valid_moves = piece.valid_moves(self.board)
+
+            if king_pos in valid_moves:
+                pieces_checking.append((piece.piece, piece.pos))
+
+        if pieces_checking:
+            self.check_checkmate(king_pos)
+
     def play(self):
         while self.playing:
             cc()
@@ -219,6 +252,8 @@ class Board:
 
             piece, pos = piece_to_check
             self.check_pieces(piece, pos)
+
+            self.check_if_king_checked()
 
     # -------------------------------------------------- Chess Tutorial Part --------------------------------------------------
     def handle_highlight_moves(self):
