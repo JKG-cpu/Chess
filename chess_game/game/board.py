@@ -53,9 +53,11 @@ class Board:
                     'King':  [(7, 4)],
                     'Queen': [(6, 4)],
                     'Rook':  [(5, 7)],
+                    'Pawn': [(4, 4)]
                 },
                 'Black': {
                     'King':  [(0, 4)],
+                    'Pawn': [(3, 3)]
                 }
             }
         }
@@ -168,6 +170,9 @@ class Board:
 
     def move_piece(self, from_r, from_c, to_r, to_c):
         piece = self.board[from_r][from_c]
+        spot = self.board[to_r][to_c]
+        if isinstance(spot, Piece):
+            self.active_pieces.remove((spot.team, spot))
         self.board[from_r][from_c] = self.empty
         self.board[to_r][to_c] = piece
 
@@ -252,23 +257,28 @@ class Board:
         self.playing = True
         while self.playing:
             cc()
-            self.display_board()
-            if self.turn == 'Player':
-                piece_to_check = self.moves.parse_input()
-                if piece_to_check == True:
-                    self.playing = False
-                    continue
-
-                piece, pos = piece_to_check
-                self.check_pieces(piece, pos)
-
-                self.turn = 'AI'
+            black_team, white_team = self.ai.evaluate(self.active_pieces)
+            if self.team == 'White':
+                print(f"Your Piece Score: {white_team} | AI Piece Score: {black_team}")
             else:
-                f_pos, t_pos = self.ai.get_possible_moves()
-                f_r, f_c = f_pos
-                t_r, t_c = t_pos
-                self.move_piece(f_r, f_c, t_r, t_c)
-                self.turn = 'Player'
+                print(f"AI Piece Score: {white_team} | Your Piece Score: {black_team}")
+            self.display_board()
+            # if self.turn == 'Player':
+            piece_to_check = self.moves.parse_input()
+            if piece_to_check == True:
+                self.playing = False
+                continue
+
+            piece, pos = piece_to_check
+            self.check_pieces(piece, pos)
+
+            #     self.turn = 'AI'
+            # else:
+            #     f_pos, t_pos = self.ai.get_possible_moves()
+            #     f_r, f_c = f_pos
+            #     t_r, t_c = t_pos
+            #     self.move_piece(f_r, f_c, t_r, t_c)
+            #    self.turn = 'Player'
 
             self.check_if_king_checked()
 
