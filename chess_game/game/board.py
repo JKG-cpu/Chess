@@ -67,7 +67,7 @@ class Board:
         self.active_pieces = []
 
         teams = ['White', 'Black']
-        choice = random.choice(teams)
+        choice = 'White'
         self.team_setup = f'{choice}-team'
         self.team_setup = 'Test-team'
         self.team = f'{choice}'
@@ -121,53 +121,6 @@ class Board:
         self.board[row][col] = piece
 
     # -------------------------------------------------- Play Chess Part -----------------------------------------------------
-    def handle_move_piece(self):
-        run = True
-        while run:
-            cc()
-            self.display_board()
-            user_input = input('Enter a piece to select: ').strip().lower()
-
-            if len(user_input) == 2 and user_input[0] in 'abcdefgh' and user_input[1] in '12345678':
-                from_r = 8 - int(user_input[1])
-                from_c = 'abcdefgh'.index(user_input[0])
-                selection = self.board[from_r][from_c]
-                if selection.team != self.team:
-                    print("That is not your piece.")
-                    input("Press enter to continue.")
-                else:
-                    valid_moves = self.get_valid_moves(from_r, from_c)
-
-                    while True and valid_moves:
-                        user_inp = input("Enter a place to go or type exit: ").strip().lower()
-                        if len(user_inp) == 2 and user_inp[0] in 'abcdefgh' and user_inp[1] in '12345678':
-                            to_r = 8 - int(user_inp[1])
-                            to_c = 'abcdefgh'.index(user_inp[0])
-                            pos = (to_r, to_c)
-
-                            if pos in valid_moves:
-                                self.move_piece(from_r, from_c, to_r, to_c)
-                                return
-
-                            else:
-                                print('Not a valid place to move.')
-                            
-                            time.sleep(0.2)
-                            
-                        elif user_inp == 'exit':
-                            return
-
-                        else:
-                            print("Not a valid move.")
-
-                    if not valid_moves:
-                        input("No Valid moves for that piece, press enter to continue.")
-
-            else:
-                print("Not an option.")
-                input("Press enter to continue.")
-                run = False
-
     def move_piece(self, from_r, from_c, to_r, to_c):
         piece = self.board[from_r][from_c]
         spot = self.board[to_r][to_c]
@@ -231,16 +184,61 @@ class Board:
             t_r, t_c = pos
             self.move_piece(r, c, t_r, t_c)
 
-    def check_checkmate(self, king_pos):
-        r, c = king_pos
-        king_valid_moves = self.get_valid_moves(r, c)
-        for team, piece in self.active_pieces:
-            pass
+    def copy_board(self, board):
+        return [[piece for piece in row] for row in board]
+
+    def copy_pieces(self, pieces):
+        from copy import deepcopy
+        return deepcopy(pieces)
+
+    def get_piece_copy(self, piece, piece_list):
+        for team, p in piece_list:
+            if p.piece == piece.piece and p.pos == piece.pos and team == piece.team:
+                return p
+
+    def check_checkmate(self, board, active_pieces, king_team):
+        # Find the king
+        king = next(piece for team, piece in active_pieces if piece.piece == "King" and team == king_team)
+        
+        # First confirm the king is actually in check
+        in_check = self.check_if_king_checked(board, active_pieces, king_team)
+        if not in_check:
+            return False  # Not in check, so cannot be checkmate
+
+        # Try every possible move for every piece on this team
+        for team, piece in active_pieces:
+            if team != king_team:
+                continue
+
+            valid_moves = piece.valid_moves(board)
+
+            for move in valid_moves:
+                # Deep copy the board and pieces
+                new_board = self.copy_board(board)
+                new_pieces = self.copy_pieces(active_pieces)
+
+                # Apply move in the cloned board
+                temp_piece = self.get_piece_copy(piece, new_pieces)
+                original_pos = temp_piece.pos
+                temp_piece.pos = move
+                new_board[original_pos[0]][original_pos[1]] = None
+                new_board[move[0]][move[1]] = temp_piece
+
+                # Remove captured piece if any
+                new_pieces = [(t, p) for t, p in new_pieces if p.pos != move or t == king_team]
+
+                # Check again
+                if not self.check_if_king_checked(new_board, new_pieces, king_team):
+                    return False  # Found a move that stops the check
+
+        return True  # No move can stop the check ⇒ checkmate
 
     def check_if_king_checked(self):
         pieces_checking = []
         king_pos = [piece.pos for _, piece in self.active_pieces if piece.piece == 'King' and piece.team != self.team][0]
-        
+        r, c = king_pos
+        king_team = self.board[r][c]
+
         for team, piece in self.active_pieces:
             if team == self.team:
                 continue
@@ -250,8 +248,17 @@ class Board:
             if king_pos in valid_moves:
                 pieces_checking.append((piece.piece, piece.pos))
 
+        checked = False
+        check_mate = False
+
         if pieces_checking:
-            self.check_checkmate(king_pos)
+            checked = True
+            check_mate = self.check_checkmate(self.board, self.active_pieces, king_team.team)
+    
+        if check_mate:
+            return check_mate, "Check-Mate"
+
+        return checked, "Check"
 
     def play(self):
         self.playing = True
@@ -263,24 +270,28 @@ class Board:
             else:
                 print(f"AI Piece Score: {white_team} | Your Piece Score: {black_team}")
             self.display_board()
-            # if self.turn == 'Player':
-            piece_to_check = self.moves.parse_input()
-            if piece_to_check == True:
+            if self.turn == 'Player':
+                piece_to_check = self.moves.parse_input()
+                if piece_to_check == True:
+                    self.playing = False
+                    continue
+
+                piece, pos = piece_to_check
+                self.check_pieces(piece, pos)
+                self.turn = 'AI'
+            
+            else:
+                f_pos, t_pos = self.ai.get_possible_moves(self.board, self.active_pieces)
+                f_r, f_c = f_pos
+                t_r, t_c = t_pos
+                self.move_piece(f_r, f_c, t_r, t_c)
+                self.turn = 'Player'
+ 
+            check, tp = self.check_if_king_checked()
+
+            if tp == 'Check-Mate':
                 self.playing = False
-                continue
-
-            piece, pos = piece_to_check
-            self.check_pieces(piece, pos)
-
-            #     self.turn = 'AI'
-            # else:
-            #     f_pos, t_pos = self.ai.get_possible_moves()
-            #     f_r, f_c = f_pos
-            #     t_r, t_c = t_pos
-            #     self.move_piece(f_r, f_c, t_r, t_c)
-            #    self.turn = 'Player'
-
-            self.check_if_king_checked()
+                self.game_end()
 
     # -------------------------------------------------- Chess Tutorial Part --------------------------------------------------
     def handle_highlight_moves(self):

@@ -6,7 +6,7 @@ class Evalution:
             'Bishop': 3,
             'Rook': 5,
             'Queen': 9,
-            'King': 0
+            'King': 1000
         }
         self.teams = ['Black', 'White']
         self.team1 = {'Team': 'Black', 'Score': 0}
@@ -16,9 +16,10 @@ class Evalution:
         self.team1['Score'] = 0
         self.team2['Score'] = 0
         for team, piece in active_pieces:
-            if team == self.team1['Team']:
+            if team == self.team1['Team'] and piece.piece != 'King':
                 self.team1['Score'] += self.piece_values[piece.piece]
             else:
-                self.team2['Score'] += self.piece_values[piece.piece]
+                if piece.piece != "King":
+                    self.team2['Score'] += self.piece_values[piece.piece]
         
         return self.team1['Score'], self.team2['Score']
