@@ -22,10 +22,19 @@ class Minimax:
 
     def get_possible_moves(self, board, pieces):
         self.move_to_do = None
-        self.move_to_do = self.minimax(board, pieces, self.depth, True)
+        self.move_to_do = self.minimax(board, pieces, self.depth, True) 
         print(self.move_to_do)
         input()
         return self.move_to_do
+
+    def generate_all_moves(self, team, board, pieces):
+        moves = []
+        for piece in pieces:
+            if piece.team == team:
+                valid_moves = piece.valid_moves(board, pieces)  # returns list of (row, col)
+                for move in valid_moves:
+                    moves.append(((piece.row, piece.col), move))
+        return moves
 
     def minimax(self, board, pieces, depth, is_maximizing):
         if depth == 0 or self.is_game_over(pieces):
@@ -33,6 +42,7 @@ class Minimax:
 
         team = self.team if is_maximizing else self.get_opponent_team()
         all_moves = self.generate_all_moves(team, board, pieces)
+        return all_moves
 
         if is_maximizing:
             max_eval = float('-inf')
@@ -42,7 +52,7 @@ class Minimax:
                 if eval_score > max_eval:
                     max_eval = eval_score
                     if depth == self.depth:
-                        self.move_to_do = (from_pos, to_pos)
+                        self.move_to_do = (from_pos, to_pos)  # <-- your tuple here
             return max_eval
         else:
             min_eval = float('inf')
@@ -52,15 +62,6 @@ class Minimax:
                 if eval_score < min_eval:
                     min_eval = eval_score
             return min_eval
-
-    def generate_all_moves(self, team, board, pieces):
-        moves = []
-        for piece in pieces:
-            if piece.team == team:
-                valid_moves = piece.valid_moves(board, pieces)
-                for move in valid_moves:
-                    moves.append(((piece.row, piece.col), move))
-        return moves
 
     def simulate_move(self, from_pos, to_pos, board, pieces):
         board_copy = copy.deepcopy(board)

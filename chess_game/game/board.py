@@ -185,7 +185,8 @@ class Board:
             self.move_piece(r, c, t_r, t_c)
 
     def copy_board(self, board):
-        return [[piece for piece in row] for row in board]
+        from copy import deepcopy
+        return deepcopy(board)
 
     def copy_pieces(self, pieces):
         from copy import deepcopy
